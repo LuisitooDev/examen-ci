@@ -33,7 +33,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Run tests
-      run: composer test
+      run: composer test tests
 
     - name: Run lint 
       run: composer lint  
