@@ -1,28 +1,39 @@
-name: API CI
+name: PHP Composer
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ "main" ]
   pull_request:
-    branches: [main, develop]
+    branches: [ "main" ]
+
+permissions:
+  contents: read
 
 jobs:
-  testing:
-    runs-on: windows-latest
+  build:
+
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4 # git clone into runner
+    - uses: actions/checkout@v3
 
-      - name: Setup Composer
-        uses: actions/setup-composer
-        with:
-          node-version: latest
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
 
-      - name: Install Dependencies
-        run: composer install
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
 
-      - name: Run unit and integration tests
-        run: composer test
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
 
-      - name: Run lint
-        run: composer lint
+    - name: Run tests
+      run: composer test
+
+    - name: Run lint 
+      run: composer lint  
